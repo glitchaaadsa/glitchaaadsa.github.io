@@ -2,8 +2,8 @@ name: fetch-images
 
 on:
   schedule:
-    - cron: "0 */6 * * *"   # 6시간마다(UTC 기준) 실행
-  workflow_dispatch: {}      # 수동 실행도 허용
+    - cron: "0 */6 * * *"   # 6시간마다(UTC)
+  workflow_dispatch: {}      # 수동 실행 허용
 
 permissions:
   contents: write
@@ -16,11 +16,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Prepare folders
+        shell: bash
         run: |
           mkdir -p images
           test -f images/catalog.json || echo '{"files":[]}' > images/catalog.json
 
-      - name: Download 4 images with custom names (fixed)
+      - name: Download 4 images (no conditional check)
         shell: bash
         run: |
           URLS=(
@@ -30,46 +31,32 @@ jobs:
             "https://backend.wplace.live/files/s0/tiles/1742/790.png"
           )
 
-          ts_now="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
           DAY="$(date -u +'%Y%m%d')"
           TIM="$(date -u +'%H%M%S')"
           tmpdir="$(mktemp -d)"
 
-          # 이전 실행에서만 가져온 If-Modified-Since 기준 시각(이번 실행 중에는 고정)
-          ims=""
-          if [ -f images/latest.txt ]; then
-            ims="$(date -u -r images/latest.txt +'%a, %d %b %Y %H:%M:%S GMT' 2>/dev/null || true)"
-          fi
-
-          saved=0
           for u in "${URLS[@]}"; do
-            # URL에서 /tiles/{A}/{B}.png 추출(정규식으로 안전하게)
+            # URL 패턴: .../tiles/{A}/{B}.png  -> A와 B 추출
             if [[ "$u" =~ /tiles/([0-9]+)/([0-9]+)\.png$ ]]; then
-              A="${BASH_REMATCH[1]}"
-              B="${BASH_REMATCH[13]}"
+              A="${BASH_REMATCH[13]}"
+              B="${BASH_REMATCH[1]}"
             else
-              # 예외 시 도메인_타임스탬프로 대체
               A="img"; B="$(date -u +'%H%M%S')"
             fi
+
             name="${A}x${B}_${DAY}_${TIM}.png"
+            out="${tmpdir}/${name}"
 
-            curl -L --fail --silent --show-error \
-                 ${ims:+-H "If-Modified-Since: $ims"} \
-                 -o "${tmpdir}/${name}" "$u" || true
+            # 항상 원본 다운로드(조건부 헤더 없음)
+            curl -L --fail --silent --show-error -o "$out" "$u" || true
 
-            if [ -s "${tmpdir}/${name}" ]; then
-              mv "${tmpdir}/${name}" "images/${name}"
+            if [ -s "$out" ]; then
+              mv "$out" "images/${name}"
               echo "Saved ${name}"
-              saved=$((saved+1))
             else
-              echo "No update for $u"
+              echo "Download failed or empty for $u"
             fi
           done
-
-          # 이번 실행에서 실제 저장이 있었을 때만 latest.txt를 갱신
-          if [ "$saved" -gt 0 ]; then
-            echo "$ts_now" > images/latest.txt
-          fi
 
       - name: Update catalog.json
         shell: bash
@@ -78,7 +65,6 @@ jobs:
           const fs = require('fs');
           const path = require('path');
           const crypto = require('crypto');
-
           const dir = 'images';
           const catalogPath = path.join(dir, 'catalog.json');
 
@@ -99,19 +85,19 @@ jobs:
             }
           }
 
-          // 최근 2000개 메타만 유지(원하는 값으로 조정 가능)
           catalog.files = catalog.files.sort((a,b)=>a.name.localeCompare(b.name)).slice(-2000);
           fs.writeFileSync(catalogPath, JSON.stringify(catalog, null, 2));
           console.log('files in catalog:', catalog.files.length);
           NODE
 
       - name: Commit and push if changed
+        shell: bash
         run: |
           git config user.email "actions@users.noreply.github.com"
           git config user.name "github-actions"
           git add -A
           if ! git diff --cached --quiet; then
-            git commit -m "chore: fetch images [skip ci]"
+            git commit -m "chore: fetch images (no-conditional) [skip ci]"
             git push
           else
             echo "No changes to commit."
