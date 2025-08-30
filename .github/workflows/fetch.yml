@@ -32,8 +32,8 @@ jobs:
             "https://backend.wplace.live/files/s0/tiles/1742/791.png"
             "https://backend.wplace.live/files/s0/tiles/1743/791.png"
           )
-          DAY="$(date -u +'%Y%m%d')"
-          TIM="$(date -u +'%H%M%S')"
+          DAY="$(TZ=Asia/Seoul date +'%Y%m%d')"
+          TIM="$(TZ=Asia/Seoul date +'%H%M%S')"
           tmpdir="$(mktemp -d)"
 
           for u in "${URLS[@]}"; do
