@@ -30,7 +30,6 @@ jobs:
             "https://backend.wplace.live/files/s0/tiles/1741/790.png"
             "https://backend.wplace.live/files/s0/tiles/1742/790.png"
           )
-          export TZ=Asia/Seoul
           DAY="$(date -u +'%Y%m%d')"
           TIM="$(date -u +'%H%M%S')"
           tmpdir="$(mktemp -d)"
