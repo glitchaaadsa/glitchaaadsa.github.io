@@ -20,10 +20,9 @@ jobs:
           mkdir -p images
           test -f images/catalog.json || echo '{"files":[]}' > images/catalog.json
 
-      - name: Download 4 images with custom names
+      - name: Download 4 images with custom names (fixed)
         shell: bash
         run: |
-          # 아카이빙 대상 PNG 4개
           URLS=(
             "https://backend.wplace.live/files/s0/tiles/1741/791.png"
             "https://backend.wplace.live/files/s0/tiles/1742/791.png"
@@ -31,22 +30,28 @@ jobs:
             "https://backend.wplace.live/files/s0/tiles/1742/790.png"
           )
 
-          ts="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          ts_now="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
           DAY="$(date -u +'%Y%m%d')"
           TIM="$(date -u +'%H%M%S')"
           tmpdir="$(mktemp -d)"
 
-          for u in "${URLS[@]}"; do
-            # URL 패턴: .../tiles/{A}/{B}.png 에서 A와 B 추출
-            A="$(echo "$u" | awk -F'/tiles/|/' '{print $3}')"
-            B="$(basename "$u" .png)"
-            name="${A}x${B}_${DAY}_${TIM}.png"
+          # 이전 실행에서만 가져온 If-Modified-Since 기준 시각(이번 실행 중에는 고정)
+          ims=""
+          if [ -f images/latest.txt ]; then
+            ims="$(date -u -r images/latest.txt +'%a, %d %b %Y %H:%M:%S GMT' 2>/dev/null || true)"
+          fi
 
-            # 조건부 요청(서버가 지원하면 변경 있을 때만 200)
-            ims=""
-            if [ -f images/latest.txt ]; then
-              ims="$(date -u -r images/latest.txt +'%a, %d %b %Y %H:%M:%S GMT' 2>/dev/null || true)"
+          saved=0
+          for u in "${URLS[@]}"; do
+            # URL에서 /tiles/{A}/{B}.png 추출(정규식으로 안전하게)
+            if [[ "$u" =~ /tiles/([0-9]+)/([0-9]+)\.png$ ]]; then
+              A="${BASH_REMATCH[1]}"
+              B="${BASH_REMATCH[13]}"
+            else
+              # 예외 시 도메인_타임스탬프로 대체
+              A="img"; B="$(date -u +'%H%M%S')"
             fi
+            name="${A}x${B}_${DAY}_${TIM}.png"
 
             curl -L --fail --silent --show-error \
                  ${ims:+-H "If-Modified-Since: $ims"} \
@@ -54,12 +59,17 @@ jobs:
 
             if [ -s "${tmpdir}/${name}" ]; then
               mv "${tmpdir}/${name}" "images/${name}"
-              echo "$ts" > images/latest.txt
               echo "Saved ${name}"
+              saved=$((saved+1))
             else
               echo "No update for $u"
             fi
           done
+
+          # 이번 실행에서 실제 저장이 있었을 때만 latest.txt를 갱신
+          if [ "$saved" -gt 0 ]; then
+            echo "$ts_now" > images/latest.txt
+          fi
 
       - name: Update catalog.json
         shell: bash
