@@ -49,7 +49,7 @@ jobs:
             A="${A//[^0-9]/}"           # 글자 제거 [4]
             B="${B//[^0-9]/}"
 
-            name="${A}x${B}_${DAY}_${TIM}.png"
+            name="${DAY}_${TIM}_${A}x${B}.png"
             out="${tmpdir}/${name}"
 
             curl -L --fail --silent --show-error -o "$out" "$u" || true  # 원본 그대로 다운로드 [14]
