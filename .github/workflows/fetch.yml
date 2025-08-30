@@ -1,0 +1,51 @@
+name: fetch-images
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"   # 6시간마다(UTC)
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare folders
+        run: |
+          mkdir -p images
+          test -f images/catalog.json || echo '{"files":[]}' > images/catalog.json
+
+      - name: Download 4 images
+        run: |
+          # 아카이빙 대상 4개 PNG URL
+          URLS=(
+            "https://backend.wplace.live/files/s0/tiles/1741/791.png"
+            "https://backend.wplace.live/files/s0/tiles/1742/791.png"
+            "https://backend.wplace.live/files/s0/tiles/1741/790.png"
+            "https://backend.wplace.live/files/s0/tiles/1742/790.png"
+          )
+          ts="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          tmpdir="$(mktemp -d)"
+          i=0
+          for u in "${URLS[@]}"; do
+            i=$((i+1))
+            name="$(date -u +'%Y%m%d-%H%M%S')-${i}.png"
+            # 변경 시에만 내려받기(서버가 지원하지 않으면 전체 다운로드)
+            ims=""
+            if [ -f images/latest.txt ]; then
+              ims="$(date -u -r images/latest.txt +'%a, %d %b %Y %H:%M:%S GMT' 2>/dev/null || true)"
+            fi
+            curl -L --fail --silent --show-error \
+                 ${ims:+-H "If-Modified-Since: $ims"} \
+                 -o "${tmpdir}/${name}" "$u" || true
+            if [ -s "${tmpdir}/${name}" ]; then
+              mv "${tmpdir}/${name}" "images/${name}"
+              echo "$ts" > images/latest.txt
+              echo "Saved ${name}"
+            else
+              echo "No update for $
