@@ -21,7 +21,7 @@ jobs:
           mkdir -p images
           test -f images/catalog.json || echo '{"files":[]}' > images/catalog.json
 
-      - name: Download 4 images (no conditional check)
+      - name: Download 4 images (robust naming)
         shell: bash
         run: |
           URLS=(
@@ -36,20 +36,22 @@ jobs:
           tmpdir="$(mktemp -d)"
 
           for u in "${URLS[@]}"; do
-            # URL 패턴: .../tiles/{A}/{B}.png  -> A와 B 추출
-            if [[ "$u" =~ /tiles/([0-9]+)/([0-9]+)\.png$ ]]; then
-              A="${BASH_REMATCH[13]}"
-              B="${BASH_REMATCH[1]}"
-            else
-              A="img"; B="$(date -u +'%H%M%S')"
-            fi
+            # 1) /tiles/ 앞부분 제거
+            path="${u#*/tiles/}"        # 예: 1741/791.png [4][1]
+            # 2) 첫 슬래시 전까지 = A
+            A="${path%%/*}"             # 예: 1741 [4]
+            # 3) 첫 슬래시 뒤(파일명)에서 확장자 제거 = B
+            tail="${path#*/}"           # 예: 791.png [4]
+            B="${tail%.*}"              # 예: 791 [4]
+
+            # 안전: 숫자만 남기기
+            A="${A//[^0-9]/}"           # 글자 제거 [4]
+            B="${B//[^0-9]/}"
 
             name="${A}x${B}_${DAY}_${TIM}.png"
             out="${tmpdir}/${name}"
 
-            # 항상 원본 다운로드(조건부 헤더 없음)
-            curl -L --fail --silent --show-error -o "$out" "$u" || true
-
+            curl -L --fail --silent --show-error -o "$out" "$u" || true  # 원본 그대로 다운로드 [14]
             if [ -s "$out" ]; then
               mv "$out" "images/${name}"
               echo "Saved ${name}"
