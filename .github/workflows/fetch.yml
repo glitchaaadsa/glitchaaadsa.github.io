@@ -21,7 +21,7 @@ jobs:
           mkdir -p images
           test -f images/catalog.json || echo '{"files":[]}' > images/catalog.json
 
-      - name: Download 4 images (robust naming)
+      - name: Download images (robust naming)
         shell: bash
         run: |
           URLS=(
