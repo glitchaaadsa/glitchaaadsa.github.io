@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>이미지 아카이브</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 2rem; }
+    header { margin-bottom: 1rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+    .card { border: 1px solid #ddd; padding: 8px; border-radius: 8px; background: #fafafa; }
+    img { max-width: 100%; height: auto; display: block; border-radius: 6px; }
+    footer { margin-top: 2rem; color: #666; font-size: 0.9rem; }
+    code { background: #f0f0f0; padding: 2px 4px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>이미지 아카이브</h1>
+    <p>이 페이지는 GitHub Actions가 6시간마다 이미지를 자동 수집해 images 폴더에 저장한 결과를 보여준다.</p>
+  </header>
+
+  <section>
+    <h2>최근 파일</h2>
+    <div id="images" class="grid"></div>
+  </section>
+
+  <footer>
+    마지막 갱신: <span id="updated"></span><br />
+    저장소의 <code>images/</code> 폴더를 직접 열어도 된다.
+  </footer>
+
+  <script>
+    async function loadImages() {
+      // GitHub Pages는 정적 파일 서비스이므로, 디렉터리 인덱싱이 없다.
+      // 워크플로가 생성하는 catalog.json을 읽어 썸네일 목록을 만든다.
+      try {
+        const res = await fetch('images/catalog.json', { cache: 'no-store' });
+        if (!res.ok) throw new Error('catalog.json 불러오기 실패');
+        const data = await res.json();
+        const list = (data.files || []).slice(-24).reverse(); // 최근 24개
+        const wrap = document.getElementById('images');
+        wrap.innerHTML = '';
+        list.forEach((f) => {
+          const div = document.createElement('div');
+          div.className = 'card';
+          const a = document.createElement('a');
+          a.href = 'images/' + f.name;
+          a.target = '_blank';
+          const img = document.createElement('img');
+          img.src = 'images/' + f.name + '?v=' + encodeURIComponent(f.sha || f.ts || '');
+          img.alt = f.name;
+          a.appendChild(img);
+          const p = document.createElement('p');
+          p.textContent = (f.ts || '').replace('T',' ').replace('Z',' UTC');
+          div.appendChild(a);
+          div.appendChild(p);
+          wrap.appendChild(div);
+        });
+        document.getElementById('updated').textContent = new Date().toLocaleString();
+      } catch (e) {
+        document.getElementById('images').textContent = '아직 수집된 이미지가 없거나 catalog.json을 불러오지 못함.';
+      }
+    }
+    loadImages();
+  </script>
+</body>
+</html>
