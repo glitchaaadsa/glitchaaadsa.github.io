@@ -25,10 +25,12 @@ jobs:
         shell: bash
         run: |
           URLS=(
-            "https://backend.wplace.live/files/s0/tiles/1741/791.png"
-            "https://backend.wplace.live/files/s0/tiles/1742/791.png"
             "https://backend.wplace.live/files/s0/tiles/1741/790.png"
             "https://backend.wplace.live/files/s0/tiles/1742/790.png"
+            "https://backend.wplace.live/files/s0/tiles/1743/790.png"
+            "https://backend.wplace.live/files/s0/tiles/1741/791.png"
+            "https://backend.wplace.live/files/s0/tiles/1742/791.png"
+            "https://backend.wplace.live/files/s0/tiles/1743/791.png"
           )
           DAY="$(date -u +'%Y%m%d')"
           TIM="$(date -u +'%H%M%S')"
