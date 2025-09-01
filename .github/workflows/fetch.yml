@@ -25,6 +25,7 @@ jobs:
         shell: bash
         run: |
           URLS=(
+            "https://backend.wplace.live/files/s0/tiles/1742/789.png"
             "https://backend.wplace.live/files/s0/tiles/1741/790.png"
             "https://backend.wplace.live/files/s0/tiles/1742/790.png"
             "https://backend.wplace.live/files/s0/tiles/1743/790.png"
