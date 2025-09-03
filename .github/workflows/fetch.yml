@@ -2,7 +2,7 @@ name: fetch-images
 
 on:
   schedule:
-    - cron: "30 */6 * * *"   # 3시간마다(UTC)
+    - cron: "30 */6 * * *"   # 6시간마다(UTC)
   workflow_dispatch: {}      # 수동 실행 허용
 
 permissions:
