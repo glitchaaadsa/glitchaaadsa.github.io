@@ -27,18 +27,43 @@ jobs:
         run: |
           set -euo pipefail
           URLS=(
+            "https://backend.wplace.live/files/s0/tiles/1738/786.png"
+            "https://backend.wplace.live/files/s0/tiles/1738/787.png"
+            "https://backend.wplace.live/files/s0/tiles/1738/788.png"
+            "https://backend.wplace.live/files/s0/tiles/1738/789.png"
+            "https://backend.wplace.live/files/s0/tiles/1738/790.png"
+            "https://backend.wplace.live/files/s0/tiles/1738/791.png"
+
+            "https://backend.wplace.live/files/s0/tiles/1739/786.png"
+            "https://backend.wplace.live/files/s0/tiles/1739/787.png"
+            "https://backend.wplace.live/files/s0/tiles/1739/788.png"
+            "https://backend.wplace.live/files/s0/tiles/1739/789.png"
+            "https://backend.wplace.live/files/s0/tiles/1739/790.png"
+            "https://backend.wplace.live/files/s0/tiles/1739/791.png"
+
+            "https://backend.wplace.live/files/s0/tiles/1740/786.png"
+            "https://backend.wplace.live/files/s0/tiles/1740/787.png"
             "https://backend.wplace.live/files/s0/tiles/1740/788.png"
             "https://backend.wplace.live/files/s0/tiles/1740/789.png"
             "https://backend.wplace.live/files/s0/tiles/1740/790.png"
             "https://backend.wplace.live/files/s0/tiles/1740/791.png"
+            
+            "https://backend.wplace.live/files/s0/tiles/1741/786.png"
+            "https://backend.wplace.live/files/s0/tiles/1741/787.png"
             "https://backend.wplace.live/files/s0/tiles/1741/788.png"
             "https://backend.wplace.live/files/s0/tiles/1741/789.png"
             "https://backend.wplace.live/files/s0/tiles/1741/790.png"
             "https://backend.wplace.live/files/s0/tiles/1741/791.png"
+            
+            "https://backend.wplace.live/files/s0/tiles/1742/786.png"
+            "https://backend.wplace.live/files/s0/tiles/1742/787.png"
             "https://backend.wplace.live/files/s0/tiles/1742/788.png"
             "https://backend.wplace.live/files/s0/tiles/1742/789.png"
             "https://backend.wplace.live/files/s0/tiles/1742/790.png"
             "https://backend.wplace.live/files/s0/tiles/1742/791.png"
+            
+            "https://backend.wplace.live/files/s0/tiles/1743/786.png"
+            "https://backend.wplace.live/files/s0/tiles/1743/787.png"
             "https://backend.wplace.live/files/s0/tiles/1743/788.png"
             "https://backend.wplace.live/files/s0/tiles/1743/789.png"
             "https://backend.wplace.live/files/s0/tiles/1743/790.png"
